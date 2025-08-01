@@ -47,7 +47,7 @@ export default {
         localStorage.setItem('token', token);
         localStorage.setItem('role', role);
 
-        // Axios isteklerine otomatik token eklemek istersen (opsiyonel)
+        // Axios isteklerine otomatik token eklemek
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
         // Role göre yönlendirme
