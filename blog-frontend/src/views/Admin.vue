@@ -45,7 +45,7 @@ export default {
     async fetchPosts() {
       try {
         const token = localStorage.getItem('token')
-        const response = await axios.get('http://localhost:8080/api/posts', {
+        const response = await axios.get('http://localhost:8082/api/posts', {
           headers: { Authorization: `Bearer ${token}` }
         })
         this.posts = response.data

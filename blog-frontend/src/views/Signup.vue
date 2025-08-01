@@ -53,7 +53,7 @@ export default {
   methods: {
     async handleSignup() {
       try {
-        await axios.post('http://localhost:8080/api/auth/register', {
+        await axios.post('http://localhost:8082/api/auth/register', {
           username: this.username,
           email: this.email,
           password: this.password,
