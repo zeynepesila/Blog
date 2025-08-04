@@ -3,17 +3,17 @@ import vue from '@vitejs/plugin-vue'
 
 export default defineConfig({
   plugins: [vue()],
-  server: {
-    proxy: {
-      '/api': {
-        target: 'http://localhost:8080',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ''),
-      },
-    },
-  },
+server: {
+  proxy: {
+    '/api': {
+      target: 'http://localhost:8082',
+      changeOrigin: true,
+      rewrite: (path) => path.replace(/^\/api/, '')
+    }
+  }
+},
   build: {
     sourcemap: false,
-    outDir: '../blog-backend/src/main/resources/static',
-  }
+    outDir: '../demo/src/main/resources/static', 
+  },
 })
