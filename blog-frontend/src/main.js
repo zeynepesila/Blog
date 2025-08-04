@@ -1,7 +1,6 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
-import axios from 'axios'
 import axios from 'axios';
 
 // Axios için temel URL'yi ayarla
