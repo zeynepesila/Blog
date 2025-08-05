@@ -7,7 +7,7 @@
       "type": "msedge",
       "request": "launch",
       "name": "Launch Edge against localhost",
-     "url": "http://localhost:5173" // veya Vite hangi portta çalışıyorsa
+     "url": "http://localhost:5174/"   
 ,
       "webRoot": "${workspaceFolder}",
       "runtimeExecutable": "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",

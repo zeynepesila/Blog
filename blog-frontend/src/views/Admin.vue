@@ -22,68 +22,58 @@
   </div>
 </template>
 
-<script>
-import axios from 'axios'
+<script setup>
+import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import api from '../api';
 
-export default {
-  name: 'Admin',
-  data() {
-    return {
-      posts: []
-    }
-  },
-  mounted() {
-    const token = localStorage.getItem('token')
-    if (!token) {
-      alert('Yetkisiz erişim, lütfen giriş yapınız.')
-      this.$router.push('/')
-      return
-    }
-    this.fetchPosts()
-  },
-  methods: {
-    async fetchPosts() {
-      try {
-        const token = localStorage.getItem('token')
-        const response = await axios.get('http://localhost:8082/api/posts', {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-        this.posts = response.data
-      } catch (error) {
-        alert('Yazılar alınamadı. Lütfen tekrar deneyin.')
-        console.error('Yazılar alınamadı', error)
-      }
-    },
-    async deletePost(postId) {
-      if (!confirm('Bu yazıyı silmek istediğinize emin misiniz?')) return
+const router = useRouter();
+const posts = ref([]);
 
-      try {
-        const token = localStorage.getItem('token')
-        await axios.delete(`http://localhost:8080/api/posts/${postId}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-        this.fetchPosts()
-      } catch (error) {
-        alert('Yazı silinemedi. Lütfen tekrar deneyin.')
-        console.error('Yazı silinemedi', error)
-      }
-    },
-    async deleteComment(commentId) {
-      if (!confirm('Bu yorumu silmek istediğinize emin misiniz?')) return
-
-      try {
-        const token = localStorage.getItem('token')
-        await axios.delete(`http://localhost:8080/api/comments/${commentId}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-        this.fetchPosts()
-      } catch (error) {
-        alert('Yorum silinemedi. Lütfen tekrar deneyin.')
-        console.error('Yorum silinemedi', error)
-      }
-    }
+const fetchPosts = async () => {
+  try {
+    const response = await api.get('/api/posts');
+    posts.value = response.data;
+  } catch (error) {
+    alert('Yazılar alınamadı. Lütfen tekrar deneyin.');
+    console.error('Yazılar alınamadı', error);
   }
-}
+};
+
+const deletePost = async (postId) => {
+  if (!confirm('Bu yazıyı silmek istediğinize emin misiniz?')) return;
+
+  try {
+    await api.delete(`/api/posts/${postId}`);
+    fetchPosts();
+  } catch (error) {
+    alert('Yazı silinemedi. Lütfen tekrar deneyin.');
+    console.error('Yazı silinemedi', error);
+  }
+};
+
+const deleteComment = async (commentId) => {
+  if (!confirm('Bu yorumu silmek istediğinize emin misiniz?')) return;
+
+  try {
+    await api.delete(`/api/comments/${commentId}`);
+    fetchPosts();
+  } catch (error) {
+    alert('Yorum silinemedi. Lütfen tekrar deneyin.');
+    console.error('Yorum silinemedi', error);
+  }
+};
+
+onMounted(() => {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    alert('Yetkisiz erişim, lütfen giriş yapınız.');
+    router.push('/');
+  } else {
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    fetchPosts();
+  }
+});
 </script>
 
 <style scoped>
