@@ -29,7 +29,7 @@ const handleSignup = async () => {
   }
 };
 </script>
-
+   
 <template>
   <div class="signup-container">
     <h2>SIGN UP</h2>

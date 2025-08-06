@@ -9,12 +9,12 @@
 
       <button @click="deletePost(post.id)">Yazıyı Sil</button>
 
-      <div class="comments">
+      <div class="comments" v-if="post.comments && post.comments.length">
         <h4>Yorumlar</h4>
         <ul>
           <li v-for="comment in post.comments" :key="comment.id">
             {{ comment.authorName }}: {{ comment.content }}
-            <button @click="deleteComment(comment.id)">Sil</button>
+            <button @click="deleteComment(comment.id, post.id)">Sil</button>
           </li>
         </ul>
       </div>
@@ -30,44 +30,53 @@ import api from '../api';
 const router = useRouter();
 const posts = ref([]);
 
+// Yazıları sunucudan al
 const fetchPosts = async () => {
   try {
-    const response = await api.get('/api/posts');
+    const response = await api.get('/api/auth/posts');
     posts.value = response.data;
   } catch (error) {
-    alert('Yazılar alınamadı. Lütfen tekrar deneyin.');
-    console.error('Yazılar alınamadı', error);
+    console.error('Yazılar alınamadı:', error);
+    alert('Yazılar yüklenirken bir hata oluştu.');
   }
 };
 
+// Yazı sil
 const deletePost = async (postId) => {
   if (!confirm('Bu yazıyı silmek istediğinize emin misiniz?')) return;
 
   try {
     await api.delete(`/api/posts/${postId}`);
-    fetchPosts();
+    posts.value = posts.value.filter(post => post.id !== postId);
   } catch (error) {
-    alert('Yazı silinemedi. Lütfen tekrar deneyin.');
-    console.error('Yazı silinemedi', error);
+    console.error('Yazı silinemedi:', error);
+    alert('Yazı silinirken bir hata oluştu.');
   }
 };
 
-const deleteComment = async (commentId) => {
+// Yorum sil
+const deleteComment = async (commentId, postId) => {
   if (!confirm('Bu yorumu silmek istediğinize emin misiniz?')) return;
 
   try {
     await api.delete(`/api/comments/${commentId}`);
-    fetchPosts();
+    const post = posts.value.find(p => p.id === postId);
+    if (post) {
+      post.comments = post.comments.filter(comment => comment.id !== commentId);
+    }
   } catch (error) {
-    alert('Yorum silinemedi. Lütfen tekrar deneyin.');
-    console.error('Yorum silinemedi', error);
+    console.error('Yorum silinemedi:', error);
+    alert('Yorum silinirken bir hata oluştu.');
   }
 };
 
+// Giriş kontrolü ve başlatma
 onMounted(() => {
   const token = localStorage.getItem('token');
-  if (!token) {
-    alert('Yetkisiz erişim, lütfen giriş yapınız.');
+  const role = localStorage.getItem('role');
+
+  if (!token || role !== 'ROLE_ADMIN') {
+    alert('Bu sayfaya sadece yöneticiler erişebilir.');
     router.push('/');
   } else {
     api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
