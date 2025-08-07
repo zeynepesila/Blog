@@ -3,6 +3,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Login from '../views/Login.vue'
 import Signup from '../views/Signup.vue'
 import Admin from '../views/Admin.vue'
+import Editor from '../views/Editor.vue'
+
 
 // Token'ın geçerliliğini kontrol eden fonksiyon
 function isTokenValid(token) {
@@ -32,7 +34,13 @@ const routes = [
     name: 'Admin',
     component: Admin,
     meta: { requiresAuth: true, role: ['ROLE_ADMIN'] } // BÜYÜK HARFLE
-  }
+  },
+ {
+    path:'/editor',
+    name:'Editor',
+    component: Editor
+  } 
+ 
 ]
 
 const router = createRouter({
@@ -43,7 +51,7 @@ const router = createRouter({
 // Navigation Guard
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token')
-  const role = localStorage.getItem('role')
+  const role = (localStorage.getItem('role') || '').toUpperCase();
 
   if (to.meta.requiresAuth) {
     if (!token || !isTokenValid(token)) {
