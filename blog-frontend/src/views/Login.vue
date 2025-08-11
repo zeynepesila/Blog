@@ -1,45 +1,57 @@
-calisan login ekranim:
-
 <script setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import api from '../api';
+import { ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import api from '../api'
 
-const router = useRouter();
+const router = useRouter()
+const route = useRoute()
 
-const email = ref('');
-const password = ref('');
+const email = ref('')
+const password = ref('')
 
 const login = async () => {
   try {
     const response = await api.post('/api/auth/login', {
       email: email.value,
       password: password.value
-    });
+    })
 
-    const { token, role } = response.data;
+    const { token, role } = response.data
+    const roleUpper = role.toUpperCase() // BÜYÜK HARF formatına çevir
 
-    localStorage.setItem('token', token);
-    localStorage.setItem('role', role);
+    // LocalStorage'a token ve rol kaydet
+    localStorage.setItem('token', token)
+    localStorage.setItem('role', roleUpper)
 
-    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    // Axios default header ayarı
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`
 
-    if (role === 'ROLE_ADMIN') {
-      router.push('/admin');
-    } else if (role === 'ROLE_EDITOR') {
-      router.push('/editor');
+    // Önceden gitmek istediği sayfa varsa oraya git
+    const redirectPath = route.query.redirect
+    if (redirectPath) {
+      router.push(redirectPath)
     } else {
-      router.push('/userhome');
+      // Redirect yoksa rol bazlı yönlendirme
+      if (roleUpper === 'ROLE_ADMIN') {
+        router.push('/admin')
+      } else if (roleUpper === 'ROLE_EDITOR') {
+        router.push('/editor')
+      } else if (roleUpper === 'ROLE_USER') {
+        router.push('/userhome')
+      } else {
+        alert('Tanımsız rol.')
+        localStorage.clear()
+      }
     }
-
   } catch (error) {
-    const message = error.response?.data?.message || "Giriş başarısız. Lütfen tekrar deneyin.";
-    alert(message);
-    console.error("Giriş hatası:", error);
+    const message =
+      error.response?.data?.message ||
+      'Giriş başarısız. Lütfen tekrar deneyin.'
+    alert(message)
+    console.error('Giriş hatası:', error)
   }
-};
+}
 </script>
-
 
 <template>
   <div class="login-container">

@@ -4,6 +4,8 @@ import Login from '../views/Login.vue'
 import Signup from '../views/Signup.vue'
 import Admin from '../views/Admin.vue'
 import Editor from '../views/Editor.vue'
+import UserHome from '../views/UserHome.vue'
+
 
 
 // Token'ın geçerliliğini kontrol eden fonksiyon
@@ -33,15 +35,24 @@ const routes = [
     path: '/admin',
     name: 'Admin',
     component: Admin,
-    meta: { requiresAuth: true, role: ['ROLE_ADMIN'] } // BÜYÜK HARFLE
+   
   },
  {
     path:'/editor',
     name:'Editor',
     component: Editor
-  } 
+  } ,
+{
+  path: '/userhome',
+  name: 'UserHome',
+  component: UserHome,
+
+}
+
+
  
 ]
+
 
 const router = createRouter({
   history: createWebHistory(),
