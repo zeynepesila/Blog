@@ -8,6 +8,7 @@
       <p><em>{{ post.summary }}</em></p>
 
       <button @click="deletePost(post.id)">Yazıyı Sil</button>
+      <button @click="editPost(post.id)">Düzenle</button>
 
       <div class="comments" v-if="post.comments && post.comments.length">
         <h4>Yorumlar</h4>
@@ -15,6 +16,7 @@
           <li v-for="comment in post.comments" :key="comment.id">
             {{ comment.authorName }}: {{ comment.content }}
             <button @click="deleteComment(comment.id, post.id)">Sil</button>
+            <button @click="editComment(comment.id, post.id)">Düzenle</button>
           </li>
         </ul>
       </div>
@@ -29,24 +31,52 @@ import api from '../api';
 
 const router = useRouter();
 const posts = ref([]);
+const comments = ref({});
+const newComment = ref({});
+const loading = ref(false);
+const error = ref(null);
 
-// Yazıları sunucudan al
+// Tüm yazıları ve yorumları getir
 const fetchPosts = async () => {
   try {
-    const response = await api.get('/api/auth/posts');
+    loading.value = true;
+    const response = await api.get('http://localhost:8082/api/posts');
     posts.value = response.data;
-  } catch (error) {
-    console.error('Yazılar alınamadı:', error);
-    alert('Yazılar yüklenirken bir hata oluştu.');
+    loading.value = false;
+  } catch (err) {
+    error.value = 'Postlar yüklenirken hata oluştu';
+    loading.value = false;
   }
 };
+const fetchComments = async (postId) => {
+  try {
+    const response = await api.get(`/api/posts/${postId}/comments`);
+    comments.value[postId] = response.data;
+  } catch (err) {
+    console.error('Yorumlar yüklenemedi:', err);
+  }
+};
+
+const addComment = async (postId) => {
+  if (!newComment.value[postId]) return;
+  try {
+    await api.post(`/api/posts/${postId}/comments`, {
+      content: newComment.value[postId]
+    });
+    newComment.value[postId] = '';
+    fetchComments(postId); // Yorum listesi güncellensin
+  } catch (err) {
+    console.error('Yorum eklenemedi:', err);
+  }
+};
+
 
 // Yazı sil
 const deletePost = async (postId) => {
   if (!confirm('Bu yazıyı silmek istediğinize emin misiniz?')) return;
 
   try {
-    await api.delete(`/api/posts/${postId}`);
+    await api.delete(`/api/admin/posts/${postId}`);
     posts.value = posts.value.filter(post => post.id !== postId);
   } catch (error) {
     console.error('Yazı silinemedi:', error);
@@ -59,7 +89,7 @@ const deleteComment = async (commentId, postId) => {
   if (!confirm('Bu yorumu silmek istediğinize emin misiniz?')) return;
 
   try {
-    await api.delete(`/api/comments/${commentId}`);
+    await api.delete(`/api/admin/comments/${commentId}`);
     const post = posts.value.find(p => p.id === postId);
     if (post) {
       post.comments = post.comments.filter(comment => comment.id !== commentId);
@@ -70,7 +100,11 @@ const deleteComment = async (commentId, postId) => {
   }
 };
 
-// Giriş kontrolü ve başlatma
+// Düzenleme yönlendirmeleri
+const editPost = (postId) => router.push(`/admin/edit-post/${postId}`);
+const editComment = (commentId, postId) => router.push(`/admin/edit-comment/${postId}/${commentId}`);
+
+// Giriş kontrolü ve token ekleme
 onMounted(() => {
   const token = localStorage.getItem('token');
   const role = localStorage.getItem('role');
